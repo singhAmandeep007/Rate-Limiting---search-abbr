@@ -4,5 +4,26 @@ body {
 }
 
 a {
-  color: #00B7FF;
+  color: #00b7ff;
+}
+
+#searchResults {
+  padding: 10px 10px 10px 100px;
+  height: 300px;
+  overflow-y: scroll;
+  width: 400px;
+  border: 1px solid #000;
+  list-style-type: decimal;
+}
+
+.found {
+  color: #1df409;
+}
+
+.notFound {
+  color: #ff0000;
+}
+
+#errorStatus {
+  color: #ff0000;
 }

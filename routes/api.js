@@ -1,41 +1,64 @@
-const express = require('express');
-const fs = require('fs');
+const express = require("express");
+const fs = require("fs");
 
 const router = express.Router();
 
-const getNames = function () {
+/**
+ * Retrieves all names from the "names.json" file.
+ * @returns {Promise<Array<string>>} A promise that resolves to an array of names.
+ * @throws {string} If there is an error reading the file.
+ */
+const getAllNames = function () {
   return new Promise((resolve, reject) => {
-    fs.readFile('./names.json', (err, data) => {
+    fs.readFile("./names.json", (err, data) => {
       if (err) {
-        reject('unable to read');
+        reject("Unable to read names.json file");
       }
       resolve(JSON.parse(data));
     });
   });
 };
 
-const checkMatchingName = async function (q) {
-  let names = await getNames();
+/**
+ * Checks if a given query matches a name in a fuzzy manner.
+ *
+ * @param {string} q - The query string to match.
+ * @param {string} name - The name to compare against the query.
+ * @returns {boolean} - Returns true if the query matches the name in a fuzzy manner, false otherwise.
+ */
+function fuzzyMatch(q, name) {
+  // for each char in query string
+  for (let char of q) {
+    // find the index of the char in the name
+    let charIndex = name.indexOf(char);
+    // if the char is not found in the name return false
+    if (charIndex === -1) {
+      return false;
+    }
+    // search for the next char in substring of name starting from the index of the current char
+    // as chars can be repeated and matching needs to be done in order
+    name = name.slice(charIndex + 1);
+  }
+  return true;
+}
 
-  //console.log(names);
+/**
+ * Retrieves an array of matching names based on the provided query.
+ *
+ * @param {string} q - The query string to match against names.
+ * @returns {Promise<Array<string>>} - A promise that resolves to an array of matching names.
+ */
+const getMatchingNames = async function (q) {
+  let names = await getAllNames();
+
   let matchingNames = [];
+
   q = q.toLowerCase();
 
   for (let i = 0; i < names.length; i++) {
-    let flag = true;
-
     let name = names[i].toLowerCase();
 
-    for (let char of q) {
-      let charIndex = name.indexOf(char);
-      if (charIndex === -1) {
-        flag = false;
-        break;
-      }
-
-      name = name.slice(charIndex + 1);
-    }
-    if (flag) {
+    if (fuzzyMatch(q, name)) {
       matchingNames.push(names[i]);
     }
   }
@@ -43,33 +66,17 @@ const checkMatchingName = async function (q) {
   return matchingNames;
 };
 
-router.get('/search', async (req, res) => {
+router.get("/search", async (req, res) => {
   let query = req.query.q;
-  console.log('query', query);
 
-  let matching = await checkMatchingName(query);
+  let matchingNames = await getMatchingNames(query);
 
   res.status(200).json({
-    message: 'success',
+    message: "success",
     query,
-    matching: JSON.stringify(matching),
-    u: matching.includes('Amandeep Singh'),
+    matchingNames,
+    isFound: matchingNames.length > 0,
   });
 });
 
 module.exports = router;
-
-let fruits = ['apple', 'banana', 'oranges', 'cherry'];
-let count = 0;
-let N = fruits.length;
-for (let index = 0; index < N; index++) {
-  if (index > 2) {
-    fruits.push('New fruit');
-  } else {
-    count++;
-  }
-}
-
-//console.log(count); // What's the output 3
-//console.log(fruits); // what's the output ['apple', 'banana', 'oranges', 'cherry','New fruit'];
-// what's the problem
