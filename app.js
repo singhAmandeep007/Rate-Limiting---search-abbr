@@ -5,6 +5,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var livereload = require("livereload");
 var connectlivereload = require("connect-livereload");
+var rateLimiter = require("./middlewares/rate-limiter");
 
 let indexRouter = require("./routes/index");
 let apiRouter = require("./routes/api");
@@ -37,56 +38,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(publicDir));
 
-// rate limit setup
-app.locals.rateLimits = {};
-app.use((req, res, next) => {
-  // if the request is not an api request, skip the rate limiting
-  if (!req.path.includes("/api")) {
-    return next();
-  }
-
-  const REQUEST_LIMIT_PER_TIME_PERIOD = 5;
-  const TIME_PERIOD = 1000 * 60; // 1sec * 60 -> 1min
-
-  const currentTime = Date.now();
-
-  const clientIp = req.ip;
-
-  // 1) check if ip is not registered, if not set a key and value as initial limit and start time
-  if (!app.locals.rateLimits[clientIp]) {
-    app.locals.rateLimits[clientIp] = { limit: REQUEST_LIMIT_PER_TIME_PERIOD, startTime: currentTime };
-
-    return next();
-  }
-
-  const { startTime, limit } = app.locals.rateLimits[clientIp];
-  // 2) check if req is has arrived within the TIME_FRAME (i.e. time at starting of req and time after (TIME_LIMIT + time when req arrived for 1st time)
-  let isWithinTimeFrame = currentTime < startTime + TIME_PERIOD;
-
-  // 3) check if limit has been exceeded
-  let isLimitExceeded = limit === 1;
-  // 4) if within time frame and limit has not been exceeded
-  if (isWithinTimeFrame && !isLimitExceeded) {
-    // decrement the limit
-    app.locals.rateLimits[clientIp].limit -= 1;
-    app.locals.rateLimits[clientIp].startTime = currentTime;
-    // continue to the next middleware
-    return next();
-  }
-  // 4) if within time frame and limit is exceeded
-  if (isWithinTimeFrame && isLimitExceeded) {
-    let timeElapsed = currentTime - app.locals.rateLimits[clientIp].startTime;
-    // return a 429 status code with a message
-    return res.status(429).json({
-      message: `Limit exceeded, try again after ${Math.round((TIME_PERIOD - timeElapsed) / 1000)} sec`,
-    });
-  }
-
-  // 5) surpassed the time period to track the req so we can ,reset startTime to track the req and limit again
-  app.locals.rateLimits[clientIp] = { limit: REQUEST_LIMIT_PER_TIME_PERIOD, startTime: currentTime };
-
-  return next();
-});
+app.use(
+  rateLimiter({
+    windowMs: 1 * 60 * 1000,
+    maxRequests: 5,
+    // apply rate limit to these routes
+    blackListedRoutes: ["/api/*"],
+    // but don't rate limit theses routes, basically override the blackListedRoutes
+    whiteListedRoutes: ["/api/search?q=am", "/api/search?q=qa"],
+  })
+);
 
 app.use("/", indexRouter);
 app.use("/api", apiRouter);

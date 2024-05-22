@@ -4,15 +4,18 @@
   "private": true,
   "scripts": {
     "start": "PORT=8000 node ./bin/www",
-    "watch": "nodemon --ext html,js,css,pug,jade,json --ignore public"
+    "watch": "nodemon --ext html,js,css,pug,jade,json --ignore public",
+    "test": "jest --watchAll"
   },
   "dependencies": {
+    "@types/jest": "^29.5.12",
     "connect-livereload": "^0.6.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
+    "jest": "^29.7.0",
     "livereload": "^0.9.3",
     "morgan": "~1.9.1",
     "nodemon": "^3.1.0"
