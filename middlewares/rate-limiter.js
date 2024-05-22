@@ -1,3 +1,12 @@
+/**
+ * Rate limiter middleware function.
+ * @param {Object} options - The options for rate limiting.
+ * @param {number} options.windowMs - The time window in milliseconds for rate limiting. Default is 1 minute.
+ * @param {number} options.maxRequests - The maximum number of requests allowed within the time window. Default is 5.
+ * @param {Array<string>} options.whiteListedRoutes - An array of routes that are exempt from rate limiting.
+ * @param {Array<string>} options.blackListedRoutes - An array of routes on which rate limiting is applied.
+ * @returns {Function} - The rate limiter middleware function.
+ */
 let matchRoutePattern = require("../utils/route");
 
 module.exports = function ({
