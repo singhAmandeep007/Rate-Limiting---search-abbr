@@ -2,6 +2,11 @@
   "name": "rate-limited-fuzzy-search",
   "version": "0.0.1",
   "private": true,
+  "license": "MIT",
+  "author": {
+    "email": "amandeep.singh.fsd@gmail.com",
+    "name": "Amandeep Singh"
+  },
   "scripts": {
     "start": "PORT=8000 node ./bin/www",
     "watch": "nodemon --ext html,js,css,pug,jade,json --ignore public",
