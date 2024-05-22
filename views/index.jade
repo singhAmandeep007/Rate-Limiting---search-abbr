@@ -3,7 +3,7 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  p Rate Limiting applied to the /api/* routes i.e. 5 requests per minute
+  p Rate Limiting applied if you search for anything other than 'am' and 'qa'. ( 5 requests per minute )
   div 
    input(type="text" id="searchInput")
    button(type="button" id="searchButton") Search

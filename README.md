@@ -18,4 +18,11 @@
     - q=ape
 
 - You can use regular expressions if you like (regex) but would be better if you do it the vanilla way.
-- Write a middleware - `rateLimit` that makes sure, the endpoint cannot be hit by a certain `IP` for more than 5 times in a minute. If the user (IP) exceeds the limit, return status code of `429` with a message "Limit exceeded"
+
+## Write a middleware - `rate limiter`
+
+- It that makes sure, the endpoint cannot be hit by a certain `IP` for more than a limit in a period of time. For example 5 times a minute. If the user (IP) exceeds the limit, return status code of `429` with a message _Limit exceeded_
+- The middleware should be configurable, so that the limit and the period can be configured.
+- The middle should also have blacklisting and whitelisting capabilities. So that rate limiting can toggled on certain routes.
+- Blacklisting - For example if the route `"/api/*"` is blacklisted, then rate limiting should be applied on all routes starting with `/api/`.
+- Whitelisting - For example if the route `"/api/search?q=am"` and `"/api/search?q=qa"` is whitelisted, then rate limiting should not be applied on these routes.
